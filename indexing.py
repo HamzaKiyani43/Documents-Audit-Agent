@@ -62,3 +62,37 @@ def load_pdf(data: bytes, name: str) -> list[Document]:
             pages.append(Document(page_content=text, metadata={"source": name, "page": number}))
     return pages
 
+
+def index_pdf(store: Chroma, data: bytes, name: str) -> int:
+    """Split, embed and store one PDF. Returns the number of chunks added.
+
+    Returns 0 if this exact file is already indexed. A different file with the
+    same name replaces the old one. Raises ValueError if the PDF has no
+    extractable text (e.g. a scan without OCR).
+    """
+    file_hash = hashlib.sha256(data).hexdigest()[:16]
+    if store.get(where={"file_hash": file_hash}, limit=1)["ids"]:
+        return 0
+
+    splitter = RecursiveCharacterTextSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
+    chunks = splitter.split_documents(load_pdf(data, name))
+    if not chunks:
+        raise ValueError(f"No extractable text in {name} (is it a scanned PDF?)")
+
+    delete_document(store, name)
+    for chunk in chunks:
+        chunk.metadata["file_hash"] = file_hash
+    store.add_documents(chunks, ids=[f"{file_hash}-{i}" for i in range(len(chunks))])
+    return len(chunks)
+
+
+def list_documents(store: Chroma) -> dict[str, int]:
+    """Indexed file names mapped to their chunk counts."""
+    metadatas = store.get(include=["metadatas"])["metadatas"]
+    return dict(sorted(Counter(m["source"] for m in metadatas).items()))
+
+
+def delete_document(store: Chroma, name: str) -> None:
+    ids = store.get(where={"source": name}, include=[])["ids"]
+    if ids:
+        store.delete(ids=ids)
