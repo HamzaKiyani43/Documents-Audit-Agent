@@ -10,4 +10,4 @@ pypdf>=5.0
 streamlit>=1.40
 python-dotenv>=1.0
 reportlab>=4.0
-
+langchain-google-genai>=1.0
