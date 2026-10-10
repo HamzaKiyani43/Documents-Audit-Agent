@@ -1,0 +1,13 @@
+langgraph>=1.0
+langchain>=1.0
+langchain-anthropic>=1.0
+langchain-chroma>=1.0
+langchain-huggingface>=1.0
+langchain-text-splitters>=1.0
+chromadb>=1.0
+sentence-transformers>=3.0
+pypdf>=5.0
+streamlit>=1.40
+python-dotenv>=1.0
+reportlab>=4.0
+
