@@ -1,3 +1,18 @@
+"""Document Audit Agent: finds statements that conflict across documents.
+
+The workflow is a LangGraph graph:
+
+- extract:     the LLM reads every indexed passage and lists its checkable claims.
+- investigate: for each claim, search the *other* documents and let the LLM judge
+               each passage found: conflict, agree or unrelated. If nothing found
+               covers the claim's topic, the LLM can propose a reworded query and
+               the graph searches once more.
+- verify:      a second, sceptical LLM pass re-reads both passages for every
+               candidate conflict and must quote the conflicting text from each.
+               Candidates whose quotes are not really in the passages are rejected.
+- report:      mirrored duplicates (A vs B and B vs A) are merged.
+"""
+
 import operator
 import os
 import re
