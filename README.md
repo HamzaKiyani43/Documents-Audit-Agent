@@ -7,7 +7,9 @@ Built with Python, LangGraph, LangChain, Chroma and Streamlit.
 ## How it works
 
 ```
-extract ──(one branch per claim)──> investigate ──> collect --> (one branch per candidate) --> verify --> report
+extract ──(one branch per claim)──> investigate ──> collect
+                                                       │
+        report <── verify <──(one branch per candidate)┘
 
 investigate:   search ──> judge ──(judge asks for a different search)──> search
                             └────(done)──> end
@@ -23,8 +25,9 @@ Every LLM step returns structured output (Pydantic models), so the graph branche
 
 ## Setup
 
-Requires Python 3.10+.
-Requires Python 3.10+.
+Requires Python 3.10+ and an API key from an LLM provider (Groq, Anthropic, Google or OpenAI).
+
+### 1. Install
 
 **With pip**
 
@@ -32,8 +35,6 @@ Requires Python 3.10+.
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env               # then put your LLM provider API key and model in .env
-streamlit run app.py
 ```
 
 **With [uv](https://docs.astral.sh/uv/)**
@@ -41,11 +42,39 @@ streamlit run app.py
 ```bash
 uv venv
 uv pip install -r requirements.txt
-cp .env.example .env               # then put your LLM provider API key and model in .env
-uv run streamlit run app.py
 ```
 
-With uv there is no need to activate the environment: `uv run` uses `.venv` automatically.
+### 2. Create a `.env` file
+
+The app will not run without this file. Copy the template and fill in your own key and model:
+
+```bash
+cp .env.example .env
+```
+
+Then open `.env` and set one provider's API key and the matching `CHAT_MODEL`, for example:
+
+```
+GROQ_API_KEY=your-key-here
+CHAT_MODEL=groq:openai/gpt-oss-20b
+```
+
+`CHAT_MODEL` is written as `provider:model`, and the key's name depends on the provider:
+
+| Provider | Key name | Example `CHAT_MODEL` |
+| --- | --- | --- |
+| Groq | `GROQ_API_KEY` | `groq:openai/gpt-oss-20b` |
+| Anthropic | `ANTHROPIC_API_KEY` | `anthropic:claude-sonnet-5-5` |
+| Google | `GOOGLE_API_KEY` | `google_genai:gemini-2.5-flash` |
+| OpenAI | `OPENAI_API_KEY` | `openai:gpt-4o-mini` |
+
+Never commit `.env`: it contains your secret key. It is listed in `.gitignore`.
+
+### 3. Run
+
+```bash
+streamlit run app.py               # with uv: uv run streamlit run app.py
+```
 
 The first start downloads the embedding model (about 90 MB), which runs locally. Upload at least two PDFs, index them, and click **Run audit**.
 
@@ -56,7 +85,7 @@ To try it immediately, upload the six test documents from `evaluation/docs/`.
 `evaluation/docs/` holds six policy documents of a fictional company with 12 planted contradictions, plus near-misses that are not contradictions (a general rule and its exception, the same number used for different things). `evaluation/ground_truth.json` lists the planted ones.
 
 ```bash
-python evaluation/evaluate.py
+python evaluation/evaluate.py      # with uv: uv run python evaluation/evaluate.py
 ```
 
 This prints how many planted contradictions were found (recall) and how many reports were false alarms (precision), before and after the verification step, and saves the details to `evaluation/results.json`.
@@ -67,30 +96,30 @@ A reported conflict counts as found if it is between the right two documents and
 
 ## Configuration
 
-Set these in `.env` (defaults shown):
+All settings live in `.env`. Only the API key and `CHAT_MODEL` are required; the rest have defaults:
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `CHAT_MODEL` | `anthropic:claude-sonnet-5-5` | `provider:model` for the LLM |
-| `EMBEDDING_MODEL` | `sentence-transformers/all-MiniLM-L6-v2` | Embedding model |
+| `EMBEDDING_MODEL` | `sentence-transformers/all-MiniLM-L6-v2` | Embedding model, runs locally |
 | `CHROMA_DIR` | `chroma_db` | Where the vector database is stored |
 | `CHUNK_SIZE` / `CHUNK_OVERLAP` | `1000` / `150` | Chunking, in characters |
 | `TOP_K` | `4` | Passages retrieved per search |
 | `MAX_SEARCHES` | `2` | Searches per claim, including the retry |
-| `MAX_CONCURRENCY` | `4` | Parallel LLM calls |
+| `MAX_CONCURRENCY` | `4` | Parallel LLM calls; use `1` on rate-limited free tiers |
+| `STRUCTURED_OUTPUT` | provider default | `function_calling` or `json_schema`; Groq models default to `json_schema` |
 
-A smaller model such as `anthropic:claude-haiku-4-5-20251001` makes audits cheaper and faster; compare its evaluation numbers before relying on it. For another provider, e.g. OpenAI: `pip install langchain-openai`, set `CHAT_MODEL=openai:gpt-4o-mini` and `OPENAI_API_KEY`.
+Smaller models are cheaper and faster; compare their evaluation numbers before relying on them.
 
 To trace every step of a run in LangSmith, set `LANGSMITH_TRACING=true` and `LANGSMITH_API_KEY`.
 
 ## Tests
 
 ```bash
-pip install pytest
-pytest
+pytest                             # with uv: uv run pytest
 ```
 
-The tests run offline with the stand-ins in `tests/fakes.py`. They cover the full graph, the search retry loop, rejection of invented quotes, merging of mirrored findings and the evaluation scoring.
+The tests run offline with the stand-ins in `tests/fakes.py`, so they need no API key. They cover the full graph, the search retry loop, rejection of invented quotes, merging of mirrored findings and the evaluation scoring.
 
 ## Files
 
@@ -99,11 +128,13 @@ The tests run offline with the stand-ins in `tests/fakes.py`. They cover the ful
 - `app.py` — the Streamlit review UI
 - `evaluation/` — test document generator, ground truth, evaluation script
 - `tests/` — offline tests and stand-in models
+- `.env.example` — template for your `.env` file
 
 ## Limitations
 
 - It compares documents with each other, not passages within one document.
-- Cost grows with the number of claims: one LLM call per passage, one or two per claim, one per candidate.
+- Cost and time grow with the number of claims: one LLM call per passage, one or two per claim, one per candidate.
+- A run that fails partway (for example on a rate limit) does not save its progress.
 - A conflict is only found if retrieval brings the two passages together; a claim worded very differently in the other document can be missed.
 - Scanned PDFs without a text layer are rejected (no OCR), and tables are read as plain text.
 - The agent flags conflicts; it does not decide which document is right.
