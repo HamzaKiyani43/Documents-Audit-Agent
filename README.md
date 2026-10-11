@@ -96,6 +96,23 @@ This prints how many planted contradictions were found (recall) and how many rep
 
 A reported conflict counts as found if it is between the right two documents and mentions both planted values. One audit of the test set makes roughly 80 to 100 LLM calls.
 
+### Results
+
+One run on 11 October 2026 with `groq:openai/gpt-oss-20b` and the default embedding model. The agent extracted 66 claims from the six documents.
+
+| | Planted contradictions found | False positives | Recall | Precision |
+| --- | --- | --- | --- | --- |
+| Before verification | 12 of 12 | 0 | 100% | 100% |
+| After verification | 12 of 12 | 0 | 100% | 100% |
+
+The full output is in `evaluation/results.json`.
+
+How to read this:
+
+- The test set is small and synthetic. Its contradictions are stated in clear, similar wording, which is easier than real documents.
+- It is a single run. LLM output varies between runs, so another run may differ by a conflict or two.
+- On this set the judge step raised no false alarms, so the verification step had nothing to remove at the level this score measures. It still merges each conflict found from both sides and rejects findings whose quotes are not in the source.
+
 `python evaluation/evaluate.py --offline` runs the same pipeline with rule-based stand-ins instead of real models. It needs no API key and only proves the pipeline runs; its numbers say nothing about model quality.
 
 ## Configuration

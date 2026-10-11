@@ -55,6 +55,29 @@ def score(items: list[dict], ground_truth: list[dict]) -> dict:
     }
 
 
+def progress_printer():
+    """Returns a function that prints a progress line each time a step of the agent finishes."""
+    counts = {"claims": 0, "checked": 0, "candidates": 0, "verified": 0}
+
+    def on_step(node: str, output: dict) -> None:
+        if node == "extract":
+            counts["claims"] = len(output.get("claims", []))
+            print(f"Extracted {counts['claims']} claims. Checking each against the other documents...")
+        elif node == "investigate":
+            counts["checked"] += 1
+            counts["candidates"] += len(output.get("findings", []))
+            print(f"\r  claim {counts['checked']} of {counts['claims']}", end="", flush=True)
+        elif node == "collect":
+            print(f"\n{counts['candidates']} candidate conflicts. Verifying each...")
+        elif node == "verify":
+            counts["verified"] += 1
+            print(f"\r  candidate {counts['verified']} of {counts['candidates']}", end="", flush=True)
+        elif node == "report":
+            print("\nDone.\n")
+
+    return on_step
+
+
 def evaluate(llm, embeddings) -> dict:
     docs_dir = HERE / "docs"
     if not docs_dir.exists():
@@ -65,9 +88,11 @@ def evaluate(llm, embeddings) -> dict:
 
     with tempfile.TemporaryDirectory() as tmp:
         store = indexing.get_vector_store(embeddings, tmp)
+        passages = 0
         for pdf in sorted(docs_dir.glob("*.pdf")):
-            indexing.index_pdf(store, pdf.read_bytes(), pdf.name)
-        state = agent.run_audit(llm, store)
+            passages += indexing.index_pdf(store, pdf.read_bytes(), pdf.name)
+        print(f"Indexed {passages} passages. Extracting claims (one LLM call per passage)...", flush=True)
+        state = agent.run_audit(llm, store, on_step=progress_printer())
 
     conflicts = state.get("conflicts", [])
     return {
