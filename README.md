@@ -4,6 +4,10 @@ An agent that finds statements that contradict each other across a set of PDF do
 
 Built with Python, LangGraph, LangChain, Chroma and Streamlit.
 
+![The review screen showing two conflicts found between an employee handbook and an onboarding guide](assets/screenshot.png)
+
+*A run on two of the test documents (`employee_handbook.pdf` and `onboarding_guide.pdf`) with `groq:openai/gpt-oss-20b`. The agent extracted 26 claims, the judge flagged 5 candidate conflicts, and verification kept 2: both contradictions planted between these two documents.*
+
 ## How it works
 
 ```
