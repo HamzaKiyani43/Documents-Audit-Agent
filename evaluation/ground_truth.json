@@ -1,0 +1,188 @@
+[
+    {
+        "id": "vacation_days",
+        "a": {
+            "source": "employee_handbook.pdf",
+            "values": [
+                "28"
+            ]
+        },
+        "b": {
+            "source": "onboarding_guide.pdf",
+            "values": [
+                "30"
+            ]
+        }
+    },
+    {
+        "id": "remote_days",
+        "a": {
+            "source": "employee_handbook.pdf",
+            "values": [
+                "3 days",
+                "three days"
+            ]
+        },
+        "b": {
+            "source": "remote_work_guideline.pdf",
+            "values": [
+                "2 days",
+                "two days"
+            ]
+        }
+    },
+    {
+        "id": "probation_period",
+        "a": {
+            "source": "employee_handbook.pdf",
+            "values": [
+                "6 months",
+                "six months"
+            ]
+        },
+        "b": {
+            "source": "onboarding_guide.pdf",
+            "values": [
+                "3 months",
+                "three months"
+            ]
+        }
+    },
+    {
+        "id": "password_length",
+        "a": {
+            "source": "it_security_policy.pdf",
+            "values": [
+                "14"
+            ]
+        },
+        "b": {
+            "source": "onboarding_guide.pdf",
+            "values": [
+                "10"
+            ]
+        }
+    },
+    {
+        "id": "password_rotation",
+        "a": {
+            "source": "it_security_policy.pdf",
+            "values": [
+                "90 days"
+            ]
+        },
+        "b": {
+            "source": "remote_work_guideline.pdf",
+            "values": [
+                "180 days"
+            ]
+        }
+    },
+    {
+        "id": "expense_deadline",
+        "a": {
+            "source": "travel_expense_policy.pdf",
+            "values": [
+                "30 days"
+            ]
+        },
+        "b": {
+            "source": "employee_handbook.pdf",
+            "values": [
+                "14 days"
+            ]
+        }
+    },
+    {
+        "id": "hotel_limit",
+        "a": {
+            "source": "travel_expense_policy.pdf",
+            "values": [
+                "150"
+            ]
+        },
+        "b": {
+            "source": "onboarding_guide.pdf",
+            "values": [
+                "120"
+            ]
+        }
+    },
+    {
+        "id": "customer_records",
+        "a": {
+            "source": "data_retention_policy.pdf",
+            "values": [
+                "5 years",
+                "five years"
+            ]
+        },
+        "b": {
+            "source": "it_security_policy.pdf",
+            "values": [
+                "2 years",
+                "two years"
+            ]
+        }
+    },
+    {
+        "id": "lost_laptop",
+        "a": {
+            "source": "it_security_policy.pdf",
+            "values": [
+                "24 hours"
+            ]
+        },
+        "b": {
+            "source": "remote_work_guideline.pdf",
+            "values": [
+                "72 hours"
+            ]
+        }
+    },
+    {
+        "id": "expense_approval",
+        "a": {
+            "source": "travel_expense_policy.pdf",
+            "values": [
+                "department head"
+            ]
+        },
+        "b": {
+            "source": "employee_handbook.pdf",
+            "values": [
+                "finance team"
+            ]
+        }
+    },
+    {
+        "id": "backup_frequency",
+        "a": {
+            "source": "it_security_policy.pdf",
+            "values": [
+                "daily"
+            ]
+        },
+        "b": {
+            "source": "data_retention_policy.pdf",
+            "values": [
+                "weekly"
+            ]
+        }
+    },
+    {
+        "id": "core_hours",
+        "a": {
+            "source": "employee_handbook.pdf",
+            "values": [
+                "10:00"
+            ]
+        },
+        "b": {
+            "source": "remote_work_guideline.pdf",
+            "values": [
+                "9:00"
+            ]
+        }
+    }
+]
